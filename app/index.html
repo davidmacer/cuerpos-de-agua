@@ -42,26 +42,34 @@
                 .then(function (response) {
                     return response.json();
                 });
-                onEachFeature: onEachFeature;
-        }
+            onEachFeature: onEachFeature
+        };
 
         var layerPopup;
 
         function onEachFeature(feature, layer) {
             layer.on('mouseover', function (e) {
+                console.log(e.sourceTarget.feature.properties);
                 e.target.setStyle({
                     fillOpacity: 1.0
                 });
-                var layerPopup = L.popup()
-                    .setLatLng(e.latlng)
-                    .setContent("Popup")
-                    .openOn(map);
+                if (map) {
+                    var layerPopup = L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent("CVE_MUN_1: " + e.sourceTarget.feature.properties.CVE_MUN_1 + "</br>" +
+                            "NOMGEO: " + e.sourceTarget.feature.properties.NOMGEO + "</br>" +
+                            "D_REPDA: " + e.sourceTarget.feature.properties.D_REPDA + "</br>" +
+                            "Observación: " + e.sourceTarget.feature.properties.OBSERVACIO
+                    )
+                        .openOn(map);
+                }
             });
             layer.on('mouseout', function (e) {
                 e.target.setStyle({
                     fillOpacity: 0.75
                 });
-                this.closePopup();
+                map.closePopup(layerPopup);
+                layerPopup = null;
             });
         };
 
@@ -71,7 +79,7 @@
                 L.geoJson(data, {
                     style: function (feature) {
                         var fillColor = "#334FFF";  // no data
-                        return { color: "#999", weight: 3, fillColor: fillColor, fillOpacity: .3 };
+                        return { color: "#334FFF", weight: 3, fillColor: fillColor, fillOpacity: .3 };
                     },
                     onEachFeature: onEachFeature,
                 }).addTo(map);
