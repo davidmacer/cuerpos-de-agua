@@ -10,8 +10,15 @@
     <!-- Make sure you put this AFTER Leaflet's CSS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"
+        integrity="sha512-Abr21JO2YqcJ03XGZRPuZSWKBhJpUAR6+2wH5zBeO4wAw4oksr8PRdF+BKIRsxvCdq+Mv4670rZ+dLnIyabbGw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.js"
+        integrity="sha512-eYE5o0mD7FFys0tVot8r4AnRXzVVXhjVpzNK+AcHkg4zNLvUAaCOJyLFKjmfpJMj6L/tuCzMN7LULBvNDhy5pA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.2.3.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
     <style>
         #map {
@@ -29,22 +36,37 @@
 
     <script>
 
-        // initialize the map
-        var map = L.map('map').setView([19.41, -99.13], 11);
-
         // load a tile layer
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 15,
             attribution: '© OpenStreetMap'
-        }).addTo(map);
+        });
 
-        function fetchJSON(url) {
-            return fetch(url)
-                .then(function (response) {
-                    return response.json();
-                });
+        // initialize the map
+        var map = L.map('map', {
+            center: [19.41, -99.13],
+            zoom: 11,
+            layers: [osm]
+        });
+
+        var agua_regiones = new L.GeoJSON.AJAX("./datos/agua_regiones.geojson", {
             onEachFeature: onEachFeature
+        });
+
+        var cuerpos_agua = new L.GeoJSON.AJAX("./datos/cuerpos_agua.geojson");
+
+        var baseMaps = {
+            "OpenStreetMap": osm
         };
+
+        var overlayMaps = {
+            "Regiones agua": agua_regiones,
+            "Cuerpos de agua": cuerpos_agua
+        };
+
+        L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+        // Funciones para el mapa
 
         var layerPopup;
 
@@ -61,7 +83,7 @@
                             "NOMGEO: " + e.sourceTarget.feature.properties.NOMGEO + "</br>" +
                             "D_REPDA: " + e.sourceTarget.feature.properties.D_REPDA + "</br>" +
                             "Observación: " + e.sourceTarget.feature.properties.OBSERVACIO
-                    )
+                        )
                         .openOn(map);
                 }
             });
@@ -73,18 +95,6 @@
                 layerPopup = null;
             });
         };
-
-        // Agrega zonas de Puebla desde un archivo externo
-        var agua_regiones = fetchJSON('./datos/agua_regiones.geojson')
-            .then(function (data) {
-                L.geoJson(data, {
-                    style: function (feature) {
-                        var fillColor = "#334FFF";  // no data
-                        return { color: "#334FFF", weight: 3, fillColor: fillColor, fillOpacity: .3 };
-                    },
-                    onEachFeature: onEachFeature,
-                }).addTo(map);
-            });
 
     </script>
 </body>
